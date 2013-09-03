@@ -1064,6 +1064,16 @@ describe(Support.getTestDialectTeaser("DAOFactory"), function () {
       })
     })
 
+    it('should be able to find rows where attribute is in a list of values', function () {
+      this.User.findAll({
+        where: {
+          username: ['boo', 'boo2']
+        }
+      }).success(function(users){
+        expect(users).to.have.length(2);
+      });
+    })
+
     it('should be able to find a row using like', function(done) {
       this.User.findAll({
         where: {
@@ -1426,14 +1436,14 @@ describe(Support.getTestDialectTeaser("DAOFactory"), function () {
         var self = this
         this.User.create({username: 'barfooz'}).success(function(user) {
           self.UserPrimary = self.sequelize.define('UserPrimary', {
-            specialKey: {
+            specialkey: {
               type: DataTypes.STRING,
               primaryKey: true
             }
           })
 
           self.UserPrimary.sync({force: true}).success(function() {
-            self.UserPrimary.create({specialKey: 'a string'}).success(function() {
+            self.UserPrimary.create({specialkey: 'a string'}).success(function() {
               self.user = user
               done()
             })
@@ -1441,9 +1451,18 @@ describe(Support.getTestDialectTeaser("DAOFactory"), function () {
         })
       })
 
+      it('does not modify the passed arguments', function (done) {
+        var options = { where: ['specialkey = ?', 'awesome']}
+
+        this.UserPrimary.find(options).success(function(user) {
+          expect(options).to.deep.equal({ where: ['specialkey = ?', 'awesome']})
+          done()
+        })
+      })
+
       it('doesn\'t throw an error when entering in a non integer value for a specified primary field', function(done) {
         this.UserPrimary.find('a string').success(function(user) {
-          expect(user.specialKey).to.equal('a string')
+          expect(user.specialkey).to.equal('a string')
           done()
         })
       })
@@ -2454,6 +2473,15 @@ describe(Support.getTestDialectTeaser("DAOFactory"), function () {
       it("finds all entries", function(done) {
         this.User.all().on('success', function(users) {
           expect(users.length).to.equal(2)
+          done()
+        })
+      })
+
+      it('does not modify the passed arguments', function (done) {
+        var options = { where: ['username = ?', 'awesome']}
+
+        this.User.findAll(options).success(function(user) {
+          expect(options).to.deep.equal({ where: ['username = ?', 'awesome']})
           done()
         })
       })
